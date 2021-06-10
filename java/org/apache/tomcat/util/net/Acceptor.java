@@ -45,6 +45,8 @@ public class Acceptor<U> implements Runnable {
     protected volatile AcceptorState state = AcceptorState.NEW;
 
 
+    // TODO xueyangh:
+    //  1. acceptor is created with an endpoint
     public Acceptor(AbstractEndpoint<?,U> endpoint) {
         this.endpoint = endpoint;
     }
@@ -66,6 +68,7 @@ public class Acceptor<U> implements Runnable {
 
 
     @Override
+    // TODO xueyangh:
     public void run() {
 
         int errorDelay = 0;
@@ -103,6 +106,7 @@ public class Acceptor<U> implements Runnable {
                     try {
                         // Accept the next incoming connection from the server
                         // socket
+                        // TODO: xueyangh:
                         socket = endpoint.serverSocketAccept();
                     } catch (Exception ioe) {
                         // We didn't get a socket
@@ -123,6 +127,7 @@ public class Acceptor<U> implements Runnable {
                     if (!stopCalled && !endpoint.isPaused()) {
                         // setSocketOptions() will hand the socket off to
                         // an appropriate processor if successful
+                        // TODO xueyangh: invoke Endpoint to handler newly newly accepted socketChannel.
                         if (!endpoint.setSocketOptions(socket)) {
                             endpoint.closeSocket(socket);
                         }

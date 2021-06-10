@@ -354,6 +354,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
                     channel = new NioChannel(bufhandler);
                 }
             }
+            // TODO xueyangh: create SocketWrapper to wrap the Channel and the Endpoint
             NioSocketWrapper newWrapper = new NioSocketWrapper(channel, this);
             channel.reset(socket, newWrapper);
             connections.put(socket, newWrapper);
@@ -367,6 +368,8 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
             socketWrapper.setReadTimeout(getConnectionTimeout());
             socketWrapper.setWriteTimeout(getConnectionTimeout());
             socketWrapper.setKeepAliveLeft(NioEndpoint.this.getMaxKeepAliveRequests());
+
+            // TODO xueyangh: registers a newly created socket with the poller. The poller emits a PollerEvent
             poller.register(channel, socketWrapper);
             return true;
         } catch (Throwable t) {
@@ -499,6 +502,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
         private void addEvent(PollerEvent event) {
             events.offer(event);
             if (wakeupCounter.incrementAndGet() == 0) {
+                // TODO: xueyangh: notify the selector to wake up and select new events.
                 selector.wakeup();
             }
         }
@@ -607,6 +611,8 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
             } else {
                 event.reset(socket, OP_REGISTER);
             }
+
+            // TODO: xueyangh: publish PollerEvent
             addEvent(event);
         }
 
@@ -645,6 +651,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
          * appropriate processor as events occur.
          */
         @Override
+        // TODO: xueyangh: Poller runs in a independent thread.
         public void run() {
             // Loop until destroy() is called
             while (true) {
@@ -657,6 +664,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
                         if (wakeupCounter.getAndSet(-1) > 0) {
                             // If we are here, means we have other stuff to do
                             // Do a non blocking select
+                            // TODO: xueyangh: select returns the newly created PollerEvent
                             keyCount = selector.selectNow();
                         } else {
                             keyCount = selector.select(selectorTimeout);
@@ -690,10 +698,12 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
                 while (iterator != null && iterator.hasNext()) {
                     SelectionKey sk = iterator.next();
                     iterator.remove();
+                    // TODO: xueyangh: get the SocketWrapper from the SelectionKey
                     NioSocketWrapper socketWrapper = (NioSocketWrapper) sk.attachment();
                     // Attachment may be null if another thread has called
                     // cancelledKey()
                     if (socketWrapper != null) {
+                        // TODO: xueyangh: handle the SocketWrapper
                         processKey(sk, socketWrapper);
                     }
                 }
@@ -727,6 +737,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
                                         socketWrapper.readBlocking = false;
                                         socketWrapper.readLock.notify();
                                     }
+                                    // TODO: xueyangh: process read event
                                 } else if (!processSocket(socketWrapper, SocketEvent.OPEN_READ, true)) {
                                     closeSocket = true;
                                 }
@@ -741,6 +752,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
                                         socketWrapper.writeBlocking = false;
                                         socketWrapper.writeLock.notify();
                                     }
+                                    // TODO: xueyangh: process write event
                                 } else if (!processSocket(socketWrapper, SocketEvent.OPEN_WRITE, true)) {
                                     closeSocket = true;
                                 }
@@ -1521,7 +1533,10 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
         }
 
         @Override
+        // TODO: xueyangh: run SockerProcessor from standalone executor thread.
         protected void doRun() {
+            // TODO: xueyangh: socketWrapper is an agrument of the SocketProcessor constructor
+            // TODO: xueyangh: extract the channel out of the wrapper
             NioChannel socket = socketWrapper.getSocket();
             Poller poller = NioEndpoint.this.poller;
             if (poller == null) {
@@ -1561,6 +1576,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
                 if (handshake == 0) {
                     SocketState state = SocketState.OPEN;
                     // Process the request from this socket
+                    // TODO: xueyangh: invoke Handler, the Handler to then invoke the Processor
                     if (event == null) {
                         state = getHandler().process(socketWrapper, SocketEvent.OPEN_READ);
                     } else {
@@ -1571,6 +1587,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
                         poller.cancelledKey(key, socketWrapper);
                     }
                 } else if (handshake == -1 ) {
+                    // TODO: xueyangh: invoke Handler, the Handler to then invoke the Processor
                     getHandler().process(socketWrapper, SocketEvent.CONNECT_FAIL);
                     SelectionKey key = JreCompat.isJre11Available() ? null : socket.getIOChannel().keyFor(poller.getSelector());
                     poller.cancelledKey(key, socketWrapper);

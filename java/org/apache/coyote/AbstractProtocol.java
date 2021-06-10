@@ -764,6 +764,7 @@ public abstract class AbstractProtocol<S> implements ProtocolHandler,
 
             S socket = wrapper.getSocket();
 
+            // TODO: xueyangh: get processor from wrapper?
             Processor processor = (Processor) wrapper.getCurrentProcessor();
             if (getLog().isDebugEnabled()) {
                 getLog().debug(sm.getString("abstractConnectionHandler.connectionsGet",
@@ -854,6 +855,7 @@ public abstract class AbstractProtocol<S> implements ProtocolHandler,
 
                 SocketState state = SocketState.CLOSED;
                 do {
+                    // TODO: xueyangh: invoke Processor
                     state = processor.process(wrapper, status);
 
                     if (state == SocketState.UPGRADING) {

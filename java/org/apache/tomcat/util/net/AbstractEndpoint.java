@@ -1059,6 +1059,7 @@ public abstract class AbstractEndpoint<S,U> {
             if (socketWrapper == null) {
                 return false;
             }
+            // TODO: xueyangh: get an existing SocketProcessor or create a new one.
             SocketProcessorBase<S> sc = null;
             if (processorCache != null) {
                 sc = processorCache.pop();
@@ -1068,6 +1069,7 @@ public abstract class AbstractEndpoint<S,U> {
             } else {
                 sc.reset(socketWrapper, event);
             }
+            // TODO: xueyangh: get an executor from executor-pool to run the SocketProcessor (a runnable)
             Executor executor = getExecutor();
             if (dispatch && executor != null) {
                 executor.execute(sc);

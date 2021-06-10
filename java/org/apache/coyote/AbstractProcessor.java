@@ -238,6 +238,7 @@ public abstract class AbstractProcessor extends AbstractProcessorLight implement
         RequestInfo rp = request.getRequestProcessor();
         try {
             rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
+            // TODO: xueyangh: invoke adaptor to process tomcat request and response
             if (!getAdapter().asyncDispatch(request, response, status)) {
                 setErrorState(ErrorState.CLOSE_NOW, null);
             }
