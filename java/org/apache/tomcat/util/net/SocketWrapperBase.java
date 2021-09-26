@@ -342,6 +342,7 @@ public abstract class SocketWrapperBase<E> {
     }
 
 
+    // TODO: xueyangh: NIO2Endpoint: 第二次调用时直接通过这个方法取数据
     protected int populateReadBuffer(ByteBuffer to) {
         // Is there enough data in the read buffer to satisfy this request?
         // Copy what data there is in the read buffer to the byte array

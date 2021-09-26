@@ -120,6 +120,7 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
             log.warn(sm.getString("endpoint.nio2.exclusiveExecutor"));
         }
 
+        // TODO: xueyangh: NIO2Endpoint: Acceptor 跑在一个单独的线程里，也是一个线程组
         serverSock = AsynchronousServerSocketChannel.open(threadGroup);
         socketProperties.setProperties(serverSock);
         InetSocketAddress addr = new InetSocketAddress(getAddress(), getPortWithOffset());
@@ -387,6 +388,8 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
 
         @Override
         public void run() {
+
+            // TODO: xueyangh: 监听连接的过程不是在一个死循环里不断地调 accept 方法，而是通过回调函数来完成的
             // The initial accept will be called in a separate utility thread
             if (!isPaused()) {
                 //if we have reached max connections, wait
@@ -398,6 +401,8 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
                 if (!isPaused()) {
                     // Note: as a special behavior, the completion handler for accept is
                     // always called in a separate thread.
+                    // TODO: xueyangh: Nio2Endpoint: Nio2Acceptor 扩展了 Acceptor，用异步 I/O 的方式来接收连接
+                    // 接下来看 Nio2Acceptor 的 completed() 方法
                     serverSock.accept(null, this);
                 } else {
                     state = AcceptorState.PAUSED;
@@ -596,6 +601,7 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
                         }
                     }
                     if (readNotify) {
+                        // TODO: xueyangh: 再次调用 Endpoint processSocket 方法, 会创建新的 SocketProcessor 放在 ThreadPool 里面run
                         getEndpoint().processSocket(Nio2SocketWrapper.this, SocketEvent.OPEN_READ, false);
                     }
                 }
@@ -846,6 +852,7 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
 
 
         @Override
+        // TODO: xueyangh: NIO2Endpoint: HTTP11Processor will call this twice
         public int read(boolean block, ByteBuffer to) throws IOException {
             checkError();
 
@@ -870,6 +877,7 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
                 }
             }
 
+            // TODO: xueyangh: NIO2Endpoint: 第二次调用时直接通过这个方法取数据
             int nRead = populateReadBuffer(to);
             if (nRead > 0) {
                 // The code that was notified is now reading its data
@@ -892,6 +900,7 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
                         log.debug("Socket: [" + this + "], Read direct from socket: [" + nRead + "]");
                     }
                 } else {
+                    // TODO: xueyangh: NIO2Endpoint: 第一次时数据没取到，会调用下面这个方法去真正执行I/O操作并注册回调函数：
                     // Fill the read buffer as best we can.
                     nRead = fillReadBuffer(block);
                     if (log.isDebugEnabled()) {
@@ -1067,6 +1076,7 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
             return fillReadBuffer(block, socketBufferHandler.getReadBuffer());
         }
 
+        // TODO: xueyangh: NIO2Endpoint: 第一次时数据没取到，会调用下面这个方法去真正执行I/O操作并注册回调函数：
         private int fillReadBuffer(boolean block, ByteBuffer to) throws IOException {
             int nRead = 0;
             Future<Integer> integer = null;
@@ -1097,6 +1107,7 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
                 }
             } else {
                 Nio2Endpoint.startInline();
+                // TODO: xueyangh: NIO2Endpoint: non-blocking read from the socket, at the same time register the callback handler
                 getSocket().read(to, toTimeout(getReadTimeout()), TimeUnit.MILLISECONDS, to,
                         readCompletionHandler);
                 Nio2Endpoint.endInline();
@@ -1632,6 +1643,7 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
                     SocketState state = SocketState.OPEN;
                     // Process the request from this socket
                     if (event == null) {
+                        // TODO: xueyangh: NIO2 SocketProcessor to process incoming socketChannel.
                         state = getHandler().process(socketWrapper, SocketEvent.OPEN_READ);
                     } else {
                         state = getHandler().process(socketWrapper, event);

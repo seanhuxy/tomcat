@@ -60,6 +60,8 @@ public class LimitLatch {
     private final Sync sync;
     private final AtomicLong count;
     private volatile long limit;
+    // TODO: xueyangh: when released = true, no thread will be blocked any more and the {@link #limit} is ignored.
+    // TODO: xueyangh: why we need volatile?
     private volatile boolean released = false;
 
     /**

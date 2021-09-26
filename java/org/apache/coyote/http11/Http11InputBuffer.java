@@ -131,6 +131,8 @@ public class Http11InputBuffer implements InputBuffer, ApplicationBufferHandler 
     private byte prevChr = 0;
     private byte chr = 0;
     private volatile boolean parsingRequestLine;
+    // TODO: xueyangh:
+    // 当 parsingRequestLinePhase = 1 时，代表数据不完整
     private int parsingRequestLinePhase = 0;
     private boolean parsingRequestLineEol = false;
     private int parsingRequestLineStart = 0;
@@ -792,6 +794,7 @@ public class Http11InputBuffer implements InputBuffer, ApplicationBufferHandler 
         SocketWrapperBase<?> socketWrapper = this.wrapper;
         int nRead = -1;
         if (socketWrapper != null) {
+            // TODO: xueyangh: Http11Processor read data from socketWrapper
             nRead = socketWrapper.read(block, byteBuffer);
         } else {
             throw new CloseNowException(sm.getString("iib.eof.error"));

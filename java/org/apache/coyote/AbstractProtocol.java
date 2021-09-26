@@ -855,7 +855,7 @@ public abstract class AbstractProtocol<S> implements ProtocolHandler,
 
                 SocketState state = SocketState.CLOSED;
                 do {
-                    // TODO: xueyangh: invoke Processor
+                    // TODO: xueyangh: invoke HTTP Processor to process the request
                     state = processor.process(wrapper, status);
 
                     if (state == SocketState.UPGRADING) {

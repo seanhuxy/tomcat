@@ -45,6 +45,7 @@ import org.apache.tomcat.websocket.WsSession;
 /**
  * Servlet 3.1 HTTP upgrade handler for WebSocket connections.
  */
+// TODO: xueyangh: websocket upgrade handler
 public class WsHttpUpgradeHandler implements InternalHttpUpgradeHandler {
 
     private final Log log = LogFactory.getLog(WsHttpUpgradeHandler.class); // must not be static

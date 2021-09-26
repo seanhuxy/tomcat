@@ -258,6 +258,7 @@ public class Http11Processor extends AbstractProcessor {
 
             // Parsing the request header
             try {
+                // TODO: xueyangh: use inputBuffer to read the request
                 if (!inputBuffer.parseRequestLine(keptAlive, protocol.getConnectionTimeout(),
                         protocol.getKeepAliveTimeout())) {
                     if (inputBuffer.getParsingRequestLinePhase() == -1) {
@@ -371,6 +372,7 @@ public class Http11Processor extends AbstractProcessor {
             if (getErrorState().isIoAllowed()) {
                 try {
                     rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
+                    // TODO: xueyangh: process the request in the adaptor
                     getAdapter().service(request, response);
                     // Handle when the response was committed before a serious
                     // error occurred.  Throwing a ServletException should both

@@ -502,7 +502,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
         private void addEvent(PollerEvent event) {
             events.offer(event);
             if (wakeupCounter.incrementAndGet() == 0) {
-                // TODO: xueyangh: notify the selector to wake up and select new events.
+                // TODO: xueyangh: notify the selector to wake up and select new events. see Poller.run method
                 selector.wakeup();
             }
         }
@@ -1535,7 +1535,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
         @Override
         // TODO: xueyangh: run SockerProcessor from standalone executor thread.
         protected void doRun() {
-            // TODO: xueyangh: socketWrapper is an agrument of the SocketProcessor constructor
+            // TODO: xueyangh: socketWrapper is an argument of the SocketProcessor constructor
             // TODO: xueyangh: extract the channel out of the wrapper
             NioChannel socket = socketWrapper.getSocket();
             Poller poller = NioEndpoint.this.poller;

@@ -671,6 +671,7 @@ public class AprEndpoint extends AbstractEndpoint<Long,Long> implements SNICallB
             wrapper.setKeepAliveLeft(getMaxKeepAliveRequests());
             wrapper.setReadTimeout(getConnectionTimeout());
             wrapper.setWriteTimeout(getConnectionTimeout());
+            // TODO: xueyangh: AprEndpoint: execute SocketWithOptionsProcessor
             getExecutor().execute(new SocketWithOptionsProcessor(wrapper));
             return true;
         } catch (RejectedExecutionException x) {
@@ -1376,6 +1377,7 @@ public class AprEndpoint extends AbstractEndpoint<Long,Long> implements SNICallB
                     // Flag to ask to reallocate the pool
                     boolean reset = false;
 
+                    // TODO: xueyangh: AprEndpoint: 调用了操作系统的 epoll API 来实现的
                     int rv = Poll.poll(aprPoller, pollTime, desc, true);
                     if (rv > 0) {
                         rv = mergeDescriptors(desc, rv);
@@ -1940,6 +1942,7 @@ public class AprEndpoint extends AbstractEndpoint<Long,Long> implements SNICallB
             synchronized (socket) {
                 if (!deferAccept) {
                     if (setSocketOptions(socket)) {
+                        // TODO: xueyangh: AprEndpoint: use poller
                         getPoller().add(socket.getSocket().longValue(),
                                 getConnectionTimeout(), Poll.APR_POLLIN);
                     } else {
@@ -1958,6 +1961,7 @@ public class AprEndpoint extends AbstractEndpoint<Long,Long> implements SNICallB
                         return;
                     }
                     // Process the request from this socket
+                    // TODO: xueyangh: AprEndpoint:
                     Handler.SocketState state = getHandler().process(socket, SocketEvent.OPEN_READ);
                     if (state == Handler.SocketState.CLOSED) {
                         // Close socket and pool
